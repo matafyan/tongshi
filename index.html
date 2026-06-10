@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>一起成事 | 实时匹配同事</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">GO</div>
+          <div>
+            <h1>一起成事</h1>
+            <p>实时匹配同事，一起做伟大的事情</p>
+          </div>
+        </div>
+
+        <a class="contact-link" href="mailto:matafyan@qq.com">想一起做伟大的事，联系 matafyan@qq.com</a>
+
+        <div class="metrics" aria-label="实时状态">
+          <div>
+            <strong id="onlineCount">0</strong>
+            <span>在线</span>
+          </div>
+          <div>
+            <strong id="matchCount">0</strong>
+            <span>可协作</span>
+          </div>
+          <div>
+            <strong id="bestScore">0%</strong>
+            <span>最高匹配</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="page">
+        <section class="intent-panel" aria-label="发布协作意图">
+          <div class="section-head">
+            <div>
+              <span>当前想做</span>
+              <h2>发布一件要做成的事</h2>
+            </div>
+            <button id="rerollName" class="ghost-button" type="button">随机昵称</button>
+          </div>
+
+          <form id="intentForm" class="intent-form">
+            <label>
+              昵称
+              <input id="aliasInput" type="text" maxlength="12" autocomplete="off" />
+            </label>
+
+            <label>
+              方向
+              <select id="categorySelect"></select>
+            </label>
+
+            <label>
+              这件事
+              <select id="merchantSelect"></select>
+            </label>
+
+            <label>
+              投入时间
+              <select id="budgetSelect"></select>
+            </label>
+
+            <label>
+              团队/地点
+              <select id="locationSelect"></select>
+            </label>
+
+            <label>
+              可见范围
+              <select id="visibilitySelect"></select>
+            </label>
+
+            <label>
+              还差同事
+              <input id="neededInput" min="1" max="4" step="1" type="number" />
+            </label>
+
+            <fieldset>
+              <legend>需要能力</legend>
+              <div id="preferenceOptions" class="chip-row"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>行动信号</legend>
+              <div id="tagOptions" class="chip-row"></div>
+            </fieldset>
+
+            <div class="switch-row">
+              <span>今天能开始</span>
+              <label class="switch" aria-label="今天是否可以开始">
+                <input id="pickupToggle" type="checkbox" />
+                <span></span>
+              </label>
+            </div>
+
+            <label>
+              期望响应
+              <div class="range-row">
+                <input id="waitInput" min="10" max="90" step="5" type="range" />
+                <output id="waitOutput">20s</output>
+              </div>
+            </label>
+
+            <button class="primary-button" type="submit">开始匹配同事</button>
+          </form>
+        </section>
+
+        <section class="match-panel" aria-label="实时匹配同事列表">
+          <div class="section-head">
+            <div>
+              <span>实时匹配</span>
+              <h2>能一起推进的同事</h2>
+            </div>
+            <strong id="publishState" class="state-pill">未发布</strong>
+          </div>
+
+          <div id="matchList" class="match-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

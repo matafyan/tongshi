@@ -116,6 +116,32 @@ p {
   background: rgba(22, 160, 133, 0.12);
 }
 
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.lang-button {
+  min-width: 38px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.lang-button.active {
+  background: var(--text);
+  color: #ffffff;
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(76px, 1fr));
@@ -549,6 +575,10 @@ fieldset,
   .contact-link {
     margin-left: 0;
     white-space: normal;
+  }
+
+  .language-toggle {
+    margin-top: -4px;
   }
 
   .metrics {

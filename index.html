@@ -12,25 +12,30 @@
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">GO</div>
           <div>
-            <h1>一起成事</h1>
-            <p>实时匹配同事，一起做伟大的事情</p>
+            <h1 data-i18n="brandTitle">一起成事</h1>
+            <p data-i18n="brandSubtitle">实时匹配同事，一起做伟大的事情</p>
           </div>
         </div>
 
-        <a class="contact-link" href="mailto:matafyan@qq.com">想一起做伟大的事，联系 matafyan@qq.com</a>
+        <a class="contact-link" href="mailto:matafyan@qq.com" data-i18n="contact">想一起做伟大的事，联系 matafyan@qq.com</a>
+
+        <div class="language-toggle" aria-label="Language switcher">
+          <button class="lang-button active" type="button" data-lang="zh">中</button>
+          <button class="lang-button" type="button" data-lang="en">EN</button>
+        </div>
 
         <div class="metrics" aria-label="实时状态">
           <div>
             <strong id="onlineCount">0</strong>
-            <span>在线</span>
+            <span data-i18n="online">在线</span>
           </div>
           <div>
             <strong id="matchCount">0</strong>
-            <span>可协作</span>
+            <span data-i18n="collaborators">可协作</span>
           </div>
           <div>
             <strong id="bestScore">0%</strong>
-            <span>最高匹配</span>
+            <span data-i18n="bestMatch">最高匹配</span>
           </div>
         </div>
       </header>
@@ -39,60 +44,60 @@
         <section class="intent-panel" aria-label="发布协作意图">
           <div class="section-head">
             <div>
-              <span>当前想做</span>
-              <h2>发布一件要做成的事</h2>
+              <span data-i18n="currentIntent">当前想做</span>
+              <h2 data-i18n="publishThing">发布一件要做成的事</h2>
             </div>
-            <button id="rerollName" class="ghost-button" type="button">随机昵称</button>
+            <button id="rerollName" class="ghost-button" type="button" data-i18n="randomName">随机昵称</button>
           </div>
 
           <form id="intentForm" class="intent-form">
             <label>
-              昵称
+              <span data-i18n="alias">昵称</span>
               <input id="aliasInput" type="text" maxlength="12" autocomplete="off" />
             </label>
 
             <label>
-              方向
+              <span data-i18n="direction">方向</span>
               <select id="categorySelect"></select>
             </label>
 
             <label>
-              这件事
+              <span data-i18n="thing">这件事</span>
               <select id="merchantSelect"></select>
             </label>
 
             <label>
-              投入时间
+              <span data-i18n="time">投入时间</span>
               <select id="budgetSelect"></select>
             </label>
 
             <label>
-              团队/地点
+              <span data-i18n="team">团队/地点</span>
               <select id="locationSelect"></select>
             </label>
 
             <label>
-              可见范围
+              <span data-i18n="visibility">可见范围</span>
               <select id="visibilitySelect"></select>
             </label>
 
             <label>
-              还差同事
+              <span data-i18n="needed">还差同事</span>
               <input id="neededInput" min="1" max="4" step="1" type="number" />
             </label>
 
             <fieldset>
-              <legend>需要能力</legend>
+              <legend data-i18n="neededSkills">需要能力</legend>
               <div id="preferenceOptions" class="chip-row"></div>
             </fieldset>
 
             <fieldset>
-              <legend>行动信号</legend>
+              <legend data-i18n="signals">行动信号</legend>
               <div id="tagOptions" class="chip-row"></div>
             </fieldset>
 
             <div class="switch-row">
-              <span>今天能开始</span>
+              <span data-i18n="startToday">今天能开始</span>
               <label class="switch" aria-label="今天是否可以开始">
                 <input id="pickupToggle" type="checkbox" />
                 <span></span>
@@ -100,24 +105,24 @@
             </div>
 
             <label>
-              期望响应
+              <span data-i18n="expectedResponse">期望响应</span>
               <div class="range-row">
                 <input id="waitInput" min="10" max="90" step="5" type="range" />
                 <output id="waitOutput">20s</output>
               </div>
             </label>
 
-            <button class="primary-button" type="submit">开始匹配同事</button>
+            <button class="primary-button" type="submit" data-i18n="startMatching">开始匹配同事</button>
           </form>
         </section>
 
         <section class="match-panel" aria-label="实时匹配同事列表">
           <div class="section-head">
             <div>
-              <span>实时匹配</span>
-              <h2>能一起推进的同事</h2>
+              <span data-i18n="realtimeMatch">实时匹配</span>
+              <h2 data-i18n="matchHeading">能一起推进的同事</h2>
             </div>
-            <strong id="publishState" class="state-pill">未发布</strong>
+            <strong id="publishState" class="state-pill" data-i18n="unpublished">未发布</strong>
           </div>
 
           <div id="matchList" class="match-list"></div>

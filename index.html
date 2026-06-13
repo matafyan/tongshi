@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="一起成事 — 实时匹配志同道合的同事，一起把事做成。选择你的目标，自动匹配伙伴，立刻开始行动。" />
+    <meta name="theme-color" content="#16a085" />
+    <meta property="og:title" content="一起成事 | Build Together" />
+    <meta property="og:description" content="实时匹配同事，一起做伟大的事情" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://matafyan.github.io/tongshi/" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
     <title>一起成事 | 实时匹配同事</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -19,29 +27,46 @@
 
         <a class="contact-link" href="mailto:matafyan@qq.com" data-i18n="contact">想一起做伟大的事，联系 matafyan@qq.com</a>
 
-        <div class="language-toggle" aria-label="Language switcher">
-          <button class="lang-button active" type="button" data-lang="zh">中</button>
-          <button class="lang-button" type="button" data-lang="en">EN</button>
-        </div>
+        <div class="topbar-actions">
+          <div class="language-toggle" aria-label="Language switcher">
+            <button class="lang-button active" type="button" data-lang="zh">中</button>
+            <button class="lang-button" type="button" data-lang="en">EN</button>
+          </div>
 
-        <div class="metrics" aria-label="实时状态">
-          <div>
-            <strong id="onlineCount">0</strong>
-            <span data-i18n="online">在线</span>
-          </div>
-          <div>
-            <strong id="matchCount">0</strong>
-            <span data-i18n="collaborators">可协作</span>
-          </div>
-          <div>
-            <strong id="bestScore">0%</strong>
-            <span data-i18n="bestMatch">最高匹配</span>
+          <div class="metrics" aria-label="实时状态">
+            <div>
+              <strong id="onlineCount">0</strong>
+              <span data-i18n="online">在线</span>
+            </div>
+            <div>
+              <strong id="matchCount">0</strong>
+              <span data-i18n="collaborators">可协作</span>
+            </div>
           </div>
         </div>
       </header>
 
       <main class="page">
-        <section class="intent-panel" aria-label="发布协作意图">
+        <!-- Step indicator -->
+        <div id="stepIndicator" class="step-indicator" aria-label="步骤导航">
+          <div class="step active" data-step="0">
+            <span class="step-num">1</span>
+            <span class="step-label" data-i18n="stepDefine">定义目标</span>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step" data-step="1">
+            <span class="step-num">2</span>
+            <span class="step-label" data-i18n="stepMatch">寻找伙伴</span>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step" data-step="2">
+            <span class="step-num">3</span>
+            <span class="step-label" data-i18n="stepCollaborate">一起成事</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Intent Form -->
+        <section class="intent-panel" aria-label="发布协作意图" id="stepPanel0">
           <div class="section-head">
             <div>
               <span data-i18n="currentIntent">当前想做</span>
@@ -53,7 +78,7 @@
           <form id="intentForm" class="intent-form">
             <label>
               <span data-i18n="alias">昵称</span>
-              <input id="aliasInput" type="text" maxlength="12" autocomplete="off" />
+              <input id="aliasInput" type="text" maxlength="12" autocomplete="off" placeholder="" />
             </label>
 
             <label>
@@ -116,16 +141,48 @@
           </form>
         </section>
 
-        <section class="match-panel" aria-label="实时匹配同事列表">
+        <!-- Step 2: Matching (shown after publishing) -->
+        <section class="match-panel" aria-label="实时匹配同事列表" id="stepPanel1" style="display:none">
           <div class="section-head">
             <div>
               <span data-i18n="realtimeMatch">实时匹配</span>
               <h2 data-i18n="matchHeading">能一起推进的同事</h2>
             </div>
-            <strong id="publishState" class="state-pill" data-i18n="unpublished">未发布</strong>
+            <strong id="publishState" class="state-pill" data-i18n="published">实时匹配中</strong>
+          </div>
+
+          <!-- Loading state -->
+          <div id="loadingState" class="loading-state" style="display:none">
+            <div class="spinner"></div>
+            <p data-i18n="findingPartner">正在为你寻找合适的同事...</p>
+            <p class="loading-sub" data-i18n="loadingSub">通常只需几秒</p>
           </div>
 
           <div id="matchList" class="match-list"></div>
+        </section>
+
+        <!-- Step 3: Connected state -->
+        <section class="connected-panel" id="stepPanel2" style="display:none" aria-label="已连接">
+          <div class="connected-hero">
+            <div class="connected-icon">🤝</div>
+            <h2 data-i18n="connectedTitle">已连接！</h2>
+            <p id="connectedWith" class="connected-text"></p>
+            <p class="connected-sub" data-i18n="connectedSub">现在可以一起把事做成了</p>
+          </div>
+
+          <div class="connected-actions">
+            <button id="startTimerBtn" class="primary-button" type="button" data-i18n="startFocusTimer">开始 25 分钟专注</button>
+            <button id="newMatchBtn" class="ghost-button" type="button" data-i18n="findAnother">找另一个伙伴</button>
+          </div>
+
+          <!-- Focus timer -->
+          <div id="focusTimer" class="focus-timer" style="display:none">
+            <div class="timer-display">
+              <span id="timerMinutes">25</span>:<span id="timerSeconds">00</span>
+            </div>
+            <p class="timer-label" data-i18n="focusLabel">专注中，一起加油</p>
+            <button id="pauseTimerBtn" class="ghost-button" type="button" data-i18n="pause">暂停</button>
+          </div>
         </section>
       </main>
     </div>

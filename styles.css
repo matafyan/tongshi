@@ -13,6 +13,7 @@
   --coral: #e85d4f;
   --violet: #7c5cc4;
   --shadow: 0 14px 32px rgba(23, 32, 42, 0.08);
+  --success: #16a085;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Microsoft YaHei", sans-serif;
@@ -50,7 +51,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   padding: 12px max(18px, calc((100vw - 1120px) / 2 + 18px));
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.9);
@@ -75,6 +76,7 @@ p {
   background: linear-gradient(135deg, var(--accent), var(--blue));
   color: #ffffff;
   font-weight: 900;
+  font-size: 16px;
 }
 
 .brand h1 {
@@ -86,7 +88,8 @@ p {
 .section-head span,
 .metrics span,
 .match-meta,
-.match-detail {
+.match-detail,
+.step-label {
   color: var(--muted);
 }
 
@@ -114,6 +117,12 @@ p {
 .contact-link:hover {
   border-color: rgba(22, 160, 133, 0.48);
   background: rgba(22, 160, 133, 0.12);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .language-toggle {
@@ -144,7 +153,7 @@ p {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(76px, 1fr));
+  grid-template-columns: repeat(2, minmax(76px, 1fr));
   gap: 8px;
 }
 
@@ -166,6 +175,74 @@ p {
   font-size: 12px;
 }
 
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 12px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  max-width: 140px;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 900;
+  transition: all 200ms ease;
+}
+
+.step.active .step-num {
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(22, 160, 133, 0.15);
+}
+
+.step.completed .step-num {
+  background: var(--accent-strong);
+  color: #ffffff;
+}
+
+.step-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.step.active .step-label {
+  color: var(--accent-strong);
+}
+
+.step-connector {
+  flex: 1;
+  max-width: 80px;
+  height: 2px;
+  background: var(--line);
+  margin: 0 -8px;
+  margin-bottom: 18px;
+  transition: background 200ms ease;
+}
+
+.step-connector.completed {
+  background: var(--accent);
+}
+
 .page {
   width: 100%;
   max-width: 1120px;
@@ -176,7 +253,8 @@ p {
 }
 
 .intent-panel,
-.match-panel {
+.match-panel,
+.connected-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -246,6 +324,7 @@ select {
   color: var(--text);
   padding: 0 11px;
   outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 input:focus,
@@ -283,6 +362,9 @@ button:focus-visible {
   color: #435062;
   font-size: 12px;
   font-weight: 800;
+  cursor: pointer;
+  transition: all 150ms ease;
+  user-select: none;
 }
 
 .chip input:checked + span {
@@ -384,6 +466,7 @@ fieldset,
 .primary-button {
   background: var(--text);
   color: #ffffff;
+  grid-column: span 4;
 }
 
 .ghost-button {
@@ -424,6 +507,13 @@ fieldset,
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  cursor: default;
+}
+
+.match-row:hover {
+  box-shadow: 0 4px 16px rgba(23, 32, 42, 0.06);
+  transform: translateY(-1px);
 }
 
 .avatar {
@@ -434,6 +524,7 @@ fieldset,
   border-radius: 8px;
   color: #ffffff;
   font-weight: 900;
+  font-size: 16px;
 }
 
 .match-main {
@@ -514,6 +605,12 @@ fieldset,
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 5px rgba(22, 160, 133, 0.12);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 5px rgba(22, 160, 133, 0.12); }
+  50% { box-shadow: 0 0 0 8px rgba(22, 160, 133, 0.25); }
 }
 
 .match-action {
@@ -537,6 +634,108 @@ fieldset,
   font-weight: 800;
 }
 
+/* Loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  gap: 12px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--soft);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.loading-sub {
+  font-size: 12px !important;
+  color: var(--line) !important;
+}
+
+/* Connected panel */
+.connected-panel {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.connected-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.connected-icon {
+  font-size: 56px;
+  line-height: 1;
+}
+
+.connected-hero h2 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.connected-text {
+  font-size: 16px;
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.connected-sub {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.connected-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.focus-timer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.timer-display {
+  font-size: 48px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  letter-spacing: 2px;
+}
+
+.timer-label {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Toast */
 .toast {
   position: fixed;
   left: 50%;
@@ -588,6 +787,10 @@ fieldset,
   .intent-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .primary-button {
+    grid-column: span 2;
+  }
 }
 
 @media (max-width: 640px) {
@@ -602,7 +805,7 @@ fieldset,
     grid-template-columns: 1fr;
   }
 
-  fieldset,
+  .fieldset,
   .switch-row,
   .range-row,
   .primary-button {
@@ -626,5 +829,26 @@ fieldset,
   .match-side {
     grid-column: 1 / -1;
     justify-items: stretch;
+  }
+
+  .step-label {
+    display: none;
+  }
+
+  .connected-actions {
+    flex-direction: column;
+  }
+
+  .connected-actions button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

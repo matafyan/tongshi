@@ -12,6 +12,7 @@
     currentStep: 0, // 0=form, 1=matching, 2=connected
     published: false,
     joinedId: null,
+    joinedMatch: null,
     timerInterval: null,
     timerRemaining: 0,
     timerPaused: false,
@@ -180,7 +181,7 @@
     "决策快": "Fast Decision"
   };
 
-  // Seed data: [alias, category, merchant, budget, location, visibility, preferences[], tags[], canPickup, needed, wait]
+  // Seed data
   const seedMatches = [
     ["今天就推进", "ai", "Agent 流程", "1小时", "工程组", "全公司可见", ["工程实现", "流程设计"], ["今天就做", "快速验证", "强执行"], true, 1, 8],
     ["原型搭档", "product", "MVP 打磨", "半天", "产品组", "同部门可见", ["产品判断", "原型"], ["同项目", "需要搭档"], true, 2, 16],
@@ -220,6 +221,7 @@
       startToday: "今天能开始",
       expectedResponse: "期望响应",
       startMatching: "开始匹配同事",
+      quickStart: "快速开始（随机）",
       realtimeMatch: "实时匹配",
       matchHeading: "能一起推进的同事",
       published: "实时匹配中",
@@ -246,7 +248,21 @@
       timerDone: "专注完成！一起庆祝一下吧",
       stepDefine: "定义目标",
       stepMatch: "寻找伙伴",
-      stepCollaborate: "一起成事"
+      stepCollaborate: "一起成事",
+      share: "分享成就",
+      shareCopied: "已复制到剪贴板",
+      shareFailed: "无法分享，请手动复制",
+      yourGoal: "你们的共同目标",
+      yourMatch: "你的搭档",
+      subtasks: "共同任务",
+      addSubtask: "添加任务",
+      taskPlaceholder: "输入任务...",
+      done: "完成",
+      undo: "撤销",
+      newIntent: "发布新目标",
+      yourAlias: "你的昵称",
+      quickMatchHint: "点击上面的按钮开始，或者直接选一个方向快速开始",
+      whyYouMatch: "为什么匹配你"
     },
     en: {
       pageTitle: "Build Together | Real-Time Teammate Matching",
@@ -270,6 +286,7 @@
       startToday: "Can start today",
       expectedResponse: "Expected response",
       startMatching: "Start matching",
+      quickStart: "Quick start (random)",
       realtimeMatch: "Real-time matching",
       matchHeading: "Teammates who can help move it forward",
       published: "Matching live",
@@ -296,7 +313,21 @@
       timerDone: "Focus session complete! Celebrate your progress",
       stepDefine: "Define Goal",
       stepMatch: "Find Partner",
-      stepCollaborate: "Collaborate"
+      stepCollaborate: "Collaborate",
+      share: "Share achievement",
+      shareCopied: "Copied to clipboard",
+      shareFailed: "Could not share, try copying manually",
+      yourGoal: "Your shared goal",
+      yourMatch: "Your partner",
+      subtasks: "Shared tasks",
+      addSubtask: "Add task",
+      taskPlaceholder: "Add a task...",
+      done: "Done",
+      undo: "Undo",
+      newIntent: "Post new goal",
+      yourAlias: "Your name",
+      quickMatchHint: "Click the button above to start, or pick a direction for quick match",
+      whyYouMatch: "Why you match"
     }
   };
 
@@ -312,7 +343,6 @@
 
   function displayAlias(value) {
     if (!value) return value;
-    // Find matching alias pair
     for (const [zh, en] of Object.entries(aliasesEn)) {
       if (value.startsWith(zh) || value.startsWith(en)) {
         const sourcePrefix = value.startsWith(zh) ? zh : en;
@@ -474,43 +504,31 @@
     let score = 0;
     const reasons = [];
 
-    // Category match: highest weight
     if (intent.category === match.category) { score += 24; reasons.push("同方向"); }
-    // Same specific thing
     if (intent.merchant === match.merchant) { score += 18; reasons.push("同一件事"); }
-    // Same team/location
     if (intent.location === match.location) { score += 14; reasons.push("同团队"); }
-    // Visibility compatibility
     if (intent.visibility === match.visibility || intent.visibility === "全公司可见" || match.visibility === "全公司可见") {
       score += 8; reasons.push("可连接");
     }
-    // Both can start today
     if (intent.canPickup && match.canPickup) { score += 10; reasons.push("今天能开始"); }
-    // Online status
     if (match.online) { score += 8; reasons.push("在线"); }
-    // Team size compatibility
     if (match.needed <= intent.needed + 1) { score += 6; reasons.push("人数合适"); }
 
-    // Time window compatibility
     const timeGap = budgetDistance(intent, match);
     if (timeGap === 0) { score += 12; reasons.push("时间一致"); }
     else if (timeGap === 1) { score += 9; reasons.push("时间接近"); }
 
-    // Shared tags
     const sharedTags = match.tags.filter((tag) => intent.tags.includes(tag));
     if (sharedTags.length) {
       score += Math.min(16, sharedTags.length * 5);
       reasons.push(...sharedTags.slice(0, 3));
     }
 
-    // Shared preferences (skills)
     const sharedPreferences = match.preferences.filter((item) => intent.preferences.includes(item));
     if (sharedPreferences.length) { score += 7; reasons.push("能力匹配"); }
 
-    // Decision maker bonus
     if (match.preferences.includes("能拍板") || intent.tags.includes("能拍板")) { score += 4; reasons.push("决策快"); }
 
-    // Wait patience bonus (shorter wait = higher score)
     score += Math.max(0, 6 - Math.floor(match.wait / 15));
 
     return {
@@ -564,6 +582,7 @@
           .map((reason) => `<span class="reason">${displayValue(reason)}</span>`)
           .join("");
         const color = category?.colors?.[index % category.colors.length] || "#16a085";
+        const scoreBar = match.score >= 80 ? "high" : match.score >= 60 ? "medium" : "low";
 
         return `
           <article class="match-row">
@@ -571,14 +590,15 @@
             <div class="match-main">
               <div class="match-title">
                 <h3>${displayValue(match.alias)}</h3>
-                <span class="score">${match.score}%</span>
+                <span class="score" data-score="${match.score}">${match.score}%</span>
               </div>
               <div class="match-meta">${displayValue(category?.name || "")} · ${displayValue(match.merchant)} · ${displayValue(match.budget)} · ${displayValue(match.location)}</div>
-              <div class="match-detail">${reasons}</div>
+              ${reasons ? `<div class="match-detail">${reasons}</div>` : ""}
+              ${match.score >= 70 ? `<div class="match-score-bar"><div class="match-score-fill" style="width:${match.score}%;background:${color}"></div></div>` : ""}
             </div>
             <div class="match-side">
               <span class="wait">${t("wait")} ${match.wait}s · ${t("peopleNeeded")} ${match.needed} ${t("peopleUnit")}</span>
-              <button class="match-action ${joined ? "joined" : ""}" type="button" data-join-id="${match.id}">
+              <button class="match-action ${joined ? "joined" : ""}" type="button" data-join-id="${match.id}" ${joined ? "disabled" : ""}>
                 ${joined ? t("joined") : t("join")}
               </button>
             </div>
@@ -604,11 +624,80 @@
 
   function goToStep(step) {
     state.currentStep = step;
-    // Show/hide panels
     if (els.stepPanel0) els.stepPanel0.style.display = step === 0 ? "" : "none";
     if (els.stepPanel1) els.stepPanel1.style.display = step === 1 ? "" : "none";
     if (els.stepPanel2) els.stepPanel2.style.display = step === 2 ? "" : "none";
     updateStepIndicator();
+  }
+
+  // ─── Quick Start ──────────────────────────────────────────
+  function quickStart() {
+    const cats = Object.keys(categories);
+    const randomCat = cats[randomInt(0, cats.length - 1)];
+    const cat = categories[randomCat];
+
+    state.intent.alias = randomAlias();
+    state.intent.category = randomCat;
+    state.intent.merchant = cat.merchants[randomInt(0, cat.merchants.length - 1)];
+    state.intent.budget = cat.budgets[randomInt(0, cat.budgets.length - 1)];
+    state.intent.location = locations[randomInt(0, locations.length - 1)];
+    state.intent.visibility = "全公司可见";
+    state.intent.needed = randomInt(1, 3);
+    state.intent.preferences = [
+      cat.preferences[randomInt(0, cat.preferences.length - 1)],
+      cat.preferences[randomInt(0, cat.preferences.length - 1)]
+    ];
+    state.intent.tags = tags.slice(0, randomInt(2, 4));
+    state.intent.canPickup = true;
+    state.intent.waitTarget = randomInt(10, 30);
+
+    // Update form UI to match
+    els.aliasInput.value = displayAlias(state.intent.alias);
+    els.categorySelect.value = state.intent.category;
+    updateCategoryOptions();
+    els.merchantSelect.value = state.intent.merchant;
+    els.budgetSelect.value = state.intent.budget;
+    els.locationSelect.value = state.intent.location;
+    els.visibilitySelect.value = state.intent.visibility;
+    els.neededInput.value = state.intent.needed;
+    els.pickupToggle.checked = true;
+    els.waitInput.value = state.intent.waitTarget;
+    els.waitOutput.textContent = `${state.intent.waitTarget}s`;
+    renderPreferenceOptions();
+    renderTagOptions();
+
+    showToast(t("startedToast"));
+
+    if (els.loadingState) els.loadingState.style.display = "flex";
+    if (els.matchList) els.matchList.innerHTML = "";
+
+    setTimeout(() => {
+      if (els.loadingState) els.loadingState.style.display = "none";
+      goToStep(1);
+      render();
+    }, 600);
+  }
+
+  // ─── Share ──────────────────────────────────────────────
+  function shareAchievement() {
+    if (!state.joinedMatch) return;
+
+    const text = state.currentLang === "zh"
+      ? `我在「一起成事」和 ${displayValue(state.joinedMatch.alias)} 一起完成${displayValue(state.joinedMatch.merchant)}！来找我一起做事吧 → ${window.location.href}`
+      : `I just matched with ${displayValue(state.joinedMatch.alias)} on Build Together to tackle ${displayValue(state.joinedMatch.merchant)}! Find your partner → ${window.location.href}`;
+
+    if (navigator.share) {
+      navigator.share({ title: t("brandTitle"), text, url: window.location.href })
+        .catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(t("shareCopied"));
+      }).catch(() => {
+        showToast(t("shareFailed"));
+      });
+    } else {
+      showToast(t("shareFailed"));
+    }
   }
 
   // ─── Events ─────────────────────────────────────────────
@@ -649,6 +738,18 @@
       els.aliasInput.value = displayAlias(state.intent.alias);
     });
 
+    // Quick start button
+    const qsBtn = document.getElementById("quickStartBtn");
+    if (qsBtn) {
+      qsBtn.addEventListener("click", quickStart);
+    }
+
+    // Share button
+    const shareBtn = document.getElementById("shareBtn");
+    if (shareBtn) {
+      shareBtn.addEventListener("click", shareAchievement);
+    }
+
     // Form submit → start matching
     els.intentForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -656,13 +757,11 @@
       state.published = true;
       showToast(t("startedToast"));
 
-      // Simulate loading then show matches
-      els.loadingState.style.display = "flex";
-      els.matchList.innerHTML = "";
+      if (els.loadingState) els.loadingState.style.display = "flex";
+      if (els.matchList) els.matchList.innerHTML = "";
 
-      // Small delay for realistic feel
       setTimeout(() => {
-        els.loadingState.style.display = "none";
+        if (els.loadingState) els.loadingState.style.display = "none";
         goToStep(1);
         render();
       }, 800);
@@ -672,16 +771,22 @@
     els.matchList.addEventListener("click", (event) => {
       const button = event.target.closest("[data-join-id]");
       if (!button) return;
-      state.joinedId = button.dataset.joinId;
-      const match = state.matches.find((item) => item.id === state.joinedId);
+      const joinId = button.dataset.joinId;
+      if (button.disabled) return;
+
+      state.joinedId = joinId;
+      state.joinedMatch = state.matches.find((item) => item.id === joinId);
+      const match = state.joinedMatch;
+
       const msg = match
         ? `${t("connectedPrefix")}${displayValue(match.alias)}${t("connectedSuffix")}`
         : t("connectedFallback");
       showToast(msg);
 
-      // Go to connected step
       setTimeout(() => {
-        els.connectedWith.textContent = `${displayValue(match?.alias || "")} · ${displayValue(match?.merchant || "")}`;
+        if (els.connectedWith) {
+          els.connectedWith.textContent = `${displayValue(match?.alias || "")} · ${displayValue(match?.merchant || "")}`;
+        }
         goToStep(2);
         render();
       }, 500);
@@ -708,14 +813,15 @@
     // New match (reset)
     els.newMatchBtn.addEventListener("click", () => {
       state.joinedId = null;
+      state.joinedMatch = null;
       state.published = false;
       state.currentStep = 0;
       clearInterval(state.timerInterval);
       state.timerRemaining = 0;
       state.timerPaused = false;
-      els.focusTimer.style.display = "none";
-      els.matchList.innerHTML = "";
-      els.loadingState.style.display = "none";
+      if (els.focusTimer) els.focusTimer.style.display = "none";
+      if (els.matchList) els.matchList.innerHTML = "";
+      if (els.loadingState) els.loadingState.style.display = "none";
       goToStep(0);
       render();
     });
@@ -742,13 +848,12 @@
   function updateTimerDisplay() {
     const mins = Math.floor(state.timerRemaining / 60);
     const secs = state.timerRemaining % 60;
-    els.timerMinutes.textContent = String(mins).padStart(2, "0");
-    els.timerSeconds.textContent = String(secs).padStart(2, "0");
+    if (els.timerMinutes) els.timerMinutes.textContent = String(mins).padStart(2, "0");
+    if (els.timerSeconds) els.timerSeconds.textContent = String(secs).padStart(2, "0");
   }
 
   // ─── Real-time Simulation ───────────────────────────────
   function startRealtime() {
-    // Update match data periodically (simulates real-time changes)
     setInterval(() => {
       state.matches = state.matches.map((match) => ({
         ...match,
@@ -756,7 +861,6 @@
         online: Math.random() > 0.04 ? true : match.online
       }));
 
-      // Occasionally change needed count
       if (Math.random() > 0.56) {
         const index = randomInt(0, state.matches.length - 1);
         state.matches[index] = {
@@ -776,11 +880,6 @@
         .then((reg) => console.log("SW registered:", reg.scope))
         .catch((err) => console.warn("SW registration failed:", err));
     }
-
-    // Request notification permission for future reminders
-    if ("Notification" in navigator && Notification.permission === "default") {
-      // Don't ask immediately — wait for user interaction
-    }
   }
 
   // ─── Init ───────────────────────────────────────────────
@@ -790,7 +889,6 @@
     hydrateForm();
     attachEvents();
 
-    // Initialize matches from seed data
     state.matches = seedMatches.map((item, index) => ({
       id: `m${index + 1}`,
       alias: item[0],

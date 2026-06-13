@@ -605,9 +605,9 @@
   function goToStep(step) {
     state.currentStep = step;
     // Show/hide panels
-    els.stepPanel0.style.display = step === 0 ? "" : "none";
-    els.stepPanel1.style.display = step === 1 ? "" : "none";
-    els.stepPanel2.style.display = step === 2 ? "" : "none";
+    if (els.stepPanel0) els.stepPanel0.style.display = step === 0 ? "" : "none";
+    if (els.stepPanel1) els.stepPanel1.style.display = step === 1 ? "" : "none";
+    if (els.stepPanel2) els.stepPanel2.style.display = step === 2 ? "" : "none";
     updateStepIndicator();
   }
 
@@ -772,7 +772,7 @@
   // ─── PWA Registration ──────────────────────────────────
   function registerPWA() {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js")
+      navigator.serviceWorker.register("sw.js")
         .then((reg) => console.log("SW registered:", reg.scope))
         .catch((err) => console.warn("SW registration failed:", err));
     }

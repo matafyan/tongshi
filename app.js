@@ -16,7 +16,7 @@
     timerRemaining: 0,
     timerPaused: false,
     intent: {
-      alias: randomAlias(),
+      alias: "想把事做成10",
       category: "ai",
       merchant: "Agent 流程",
       budget: "1小时",
@@ -35,6 +35,22 @@
   const els = {};
 
   // ─── Data ───────────────────────────────────────────────
+  const aliases = [
+    "想把事做成", "今天就推进", "一起破局", "原型搭档", "增长搭档",
+    "行动派同事", "能拍板的人", "快速验证员"
+  ];
+
+  const aliasesEn = {
+    "想把事做成": "Make-it-happen",
+    "今天就推进": "Move Today",
+    "一起破局": "Breakthrough Partner",
+    "原型搭档": "Prototype Partner",
+    "增长搭档": "Growth Partner",
+    "行动派同事": "Action Teammate",
+    "能拍板的人": "Decision Maker",
+    "快速验证员": "Fast Validator"
+  };
+
   const categories = {
     product: {
       name: "产品增长",
@@ -76,21 +92,6 @@
   const tags = ["今天就做", "需要搭档", "可远程", "同项目", "强执行", "深度讨论", "快速验证", "能拍板"];
   const locations = ["产品组", "工程组", "设计组", "运营组", "增长组", "远程协作"];
   const visibilities = ["全公司可见", "同部门可见", "熟人同事可见"];
-  const aliases = [
-    "想把事做成", "今天就推进", "一起破局", "原型搭档", "增长搭档",
-    "行动派同事", "能拍板的人", "快速验证员"
-  ];
-
-  const aliasesEn = {
-    "想把事做成": "Make-it-happen",
-    "今天就推进": "Move Today",
-    "一起破局": "Breakthrough Partner",
-    "原型搭档": "Prototype Partner",
-    "增长搭档": "Growth Partner",
-    "行动派同事": "Action Teammate",
-    "能拍板的人": "Decision Maker",
-    "快速验证员": "Fast Validator"
-  };
 
   const valueText = {
     "产品增长": "Product Growth",

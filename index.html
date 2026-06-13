@@ -1,196 +1,1453 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="一起成事 — 实时匹配志同道合的同事，一起把事做成。选择你的目标，自动匹配伙伴，立刻开始行动。" />
-    <meta name="theme-color" content="#16a085" />
-    <meta property="og:title" content="一起成事 | Build Together" />
-    <meta property="og:description" content="实时匹配同事，一起做伟大的事情" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://matafyan.github.io/tongshi/" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
-    <title>一起成事 | 实时匹配同事</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="app">
-      <header class="topbar">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true">GO</div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>搭子连线 | 实时游戏组队</title>
+<style>
+:root {
+  --primary: #6C5CE7;
+  --primary-dark: #5A4BD1;
+  --primary-light: #A29BFE;
+  --accent: #00CEC9;
+  --danger: #FF6B6B;
+  --warning: #FDCB6E;
+  --success: #00B894;
+  --bg: #0F0F1A;
+  --bg-card: #1A1A2E;
+  --bg-card-hover: #222240;
+  --bg-input: #16162B;
+  --text: #E8E8F0;
+  --text-muted: #8888AA;
+  --text-dim: #666688;
+  --border: #2A2A45;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.page { display: none; min-height: 100vh; }
+.page.active { display: block; }
+
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(15,15,26,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.top-bar .logo {
+  font-size: 20px; font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  cursor: pointer;
+}
+.top-bar .logo span { font-weight: 400; font-size: 13px; margin-left: 4px; opacity: 0.7; }
+.nav-right { display: flex; gap: 8px; align-items: center; }
+.nav-right .btn-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.2s;
+}
+.nav-right .btn-icon:hover { background: var(--bg-card-hover); color: var(--text); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  border: none; transition: all 0.2s; white-space: nowrap;
+}
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(108,92,231,0.4); }
+.btn-accent { background: linear-gradient(135deg, var(--accent), #00B894); color: #fff; }
+.btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,206,201,0.4); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-sm { padding: 6px 14px; font-size: 12px; border-radius: var(--radius-xs); }
+.btn-lg { padding: 14px 28px; font-size: 16px; }
+.btn-full { width: 100%; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; transition: all 0.2s;
+}
+.card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.container-narrow { max-width: 640px; margin: 0 auto; padding: 20px; }
+
+.grid-rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+.filter-bar {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 16px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.filter-bar label { font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px; }
+.filter-bar select, .filter-bar input {
+  flex: 1; min-width: 120px; padding: 8px 12px; background: var(--bg-input);
+  border: 1px solid var(--border); border-radius: var(--radius-xs); color: var(--text); font-size: 13px; outline: none;
+}
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--primary); }
+
+.room-card { cursor: pointer; }
+.room-card .room-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.room-card .room-game {
+  display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; background: var(--primary); color: #fff;
+}
+.room-card .room-game.wf { background: #E74C3C; }
+.room-card .room-game.dota { background: #2ECC71; }
+.room-card .room-game.cs { background: #F39C12; }
+.room-card .room-game.hok { background: #9B59B6; }
+.room-card .room-status { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+.room-status.free { background: rgba(0,184,148,0.15); color: var(--success); }
+.room-status.paid { background: rgba(253,203,110,0.15); color: var(--warning); }
+.room-status.full { background: rgba(255,107,107,0.15); color: var(--danger); }
+.room-card .room-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+.room-card .room-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.room-card .room-tag { font-size: 11px; padding: 2px 8px; background: rgba(108,92,231,0.12); color: var(--primary-light); border-radius: 4px; }
+.room-card .room-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+.room-card .room-host { display: flex; align-items: center; gap: 8px; }
+.room-card .avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.room-card .host-info .host-name { font-size: 12px; font-weight: 600; }
+.room-card .host-info .host-trust { font-size: 11px; color: var(--text-muted); }
+.room-card .room-time { font-size: 11px; color: var(--text-dim); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 12px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-verified { background: rgba(0,206,201,0.15); color: var(--accent); }
+.badge-premium { background: rgba(253,203,110,0.15); color: var(--warning); }
+.badge-elite { background: rgba(108,92,231,0.2); color: var(--primary-light); }
+
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+}
+
+.hero { text-align: center; padding: 40px 20px 30px; }
+.hero h1 {
+  font-size: 32px; font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;
+}
+.hero p { color: var(--text-muted); font-size: 15px; max-width: 500px; margin: 0 auto 24px; }
+
+.stats-bar { display: flex; gap: 24px; justify-content: center; padding: 16px; }
+.stat-item { text-align: center; }
+.stat-item .stat-num { font-size: 24px; font-weight: 800; color: var(--primary-light); }
+.stat-item .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--text); font-size: 14px; outline: none; transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 12px; }
+.form-row > .form-group { flex: 1; }
+
+.tag-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-option {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  background: var(--bg-input); border: 1px solid var(--border); color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.tag-option:hover { border-color: var(--primary); }
+.tag-option.selected { background: rgba(108,92,231,0.2); border-color: var(--primary); color: var(--primary-light); }
+
+.chat-container {
+  display: flex; flex-direction: column; height: calc(100vh - 56px - 160px); max-height: 600px;
+}
+.chat-header {
+  display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+}
+.chat-header .chat-info h3 { font-size: 15px; font-weight: 600; }
+.chat-header .chat-info p { font-size: 12px; color: var(--text-muted); }
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 8px 0; display: flex; flex-direction: column; gap: 8px;
+}
+.chat-msg { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+.chat-msg.system { align-self: center; background: transparent; color: var(--text-dim); font-size: 12px; }
+.chat-msg.host-msg {
+  align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); border-bottom-left-radius: 4px;
+}
+.chat-msg.guest-msg {
+  align-self: flex-end; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-bottom-right-radius: 4px;
+}
+.chat-msg .msg-meta { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+.chat-input-bar { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); margin-top: 12px; }
+.chat-input-bar input {
+  flex: 1; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 14px; outline: none;
+}
+.chat-input-bar input:focus { border-color: var(--primary); }
+
+.detail-hero {
+  display: flex; gap: 20px; padding: 24px; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 20px;
+}
+.detail-hero .detail-avatar {
+  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff;
+}
+.detail-hero .detail-info { flex: 1; }
+.detail-hero .detail-info h2 { font-size: 20px; margin-bottom: 4px; }
+.detail-hero .detail-info .detail-title { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
+.detail-hero .detail-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.detail-section {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+}
+.detail-section h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+
+.rating-stars { display: flex; gap: 8px; margin: 12px 0; }
+.rating-stars .star { font-size: 32px; cursor: pointer; color: var(--text-dim); transition: color 0.2s; }
+.rating-stars .star.active { color: var(--warning); }
+.rating-stars .star:hover { color: var(--warning); }
+
+.profile-header {
+  display: flex; align-items: center; gap: 20px; padding: 24px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px;
+}
+.profile-avatar {
+  width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff;
+}
+.profile-stats { display: flex; gap: 32px; margin-top: 16px; }
+.profile-stat .val { font-size: 20px; font-weight: 800; }
+.profile-stat .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+.admin-tabs { display: flex; gap: 4px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 20px; }
+.admin-tab {
+  flex: 1; padding: 8px 16px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 600;
+  text-align: center; cursor: pointer; color: var(--text-muted); background: transparent; border: none; transition: all 0.2s;
+}
+.admin-tab.active { background: var(--primary); color: #fff; }
+.admin-tab:hover:not(.active) { color: var(--text); }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; }
+.modal h2 { font-size: 18px; margin-bottom: 16px; }
+.modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+.banner {
+  background: linear-gradient(135deg, rgba(108,92,231,0.15), rgba(0,206,201,0.1));
+  border: 1px solid var(--primary); border-radius: var(--radius); padding: 24px;
+  margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.banner h2 { font-size: 18px; font-weight: 700; }
+.banner p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-card); border: 1px solid var(--accent); border-radius: var(--radius-sm);
+  padding: 12px 24px; font-size: 14px; font-weight: 600; color: var(--accent);
+  z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+  background: rgba(15,15,26,0.95); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around;
+  z-index: 100;
+}
+.bottom-nav .nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+  padding: 8px 16px; border-radius: var(--radius-xs); transition: all 0.2s;
+  background: none; border: none; color: var(--text-dim); font-size: 10px; font-weight: 600;
+}
+.bottom-nav .nav-item.active { color: var(--primary-light); }
+.bottom-nav .nav-item:hover { color: var(--text); }
+.bottom-nav .nav-item .nav-icon { font-size: 20px; }
+
+.page { padding-bottom: 60px; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+  display: inline-block; animation: pulse 2s infinite; margin-right: 4px;
+}
+
+.copy-box { display: flex; gap: 8px; margin: 16px 0; }
+.copy-box input {
+  flex: 1; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--accent); font-size: 13px; outline: none;
+}
+
+.room-card .leave-btn {
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .grid-rooms { grid-template-columns: 1fr; }
+  .filter-bar { flex-direction: column; }
+  .detail-hero { flex-direction: column; text-align: center; }
+  .detail-hero .detail-meta { justify-content: center; }
+  .profile-header { flex-direction: column; text-align: center; }
+  .profile-stats { justify-content: center; }
+  .form-row { flex-direction: column; }
+  .hero h1 { font-size: 24px; }
+  .banner { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="logo" onclick="navigateTo('home')">&#9830; 搭子连线<span>&middot; 游戏组队</span></div>
+  <div class="nav-right">
+    <span id="currentUserDisplay" style="font-size:12px;color:var(--text-muted)"></span>
+    <button class="btn-icon" onclick="navigateTo('create')" title="创建房间">&#43;</button>
+  </div>
+</header>
+<div class="toast" id="toast"></div>
+
+<!-- ============ HOME ============ -->
+<div class="page active" id="page-home">
+<div class="container">
+<div class="hero">
+<h1>60秒找到靠谱队友</h1>
+<p>告别随机匹配，和同段位的好队友一起玩。现在就开始组队吧！</p>
+</div>
+<div class="stats-bar">
+<div class="stat-item"><div class="stat-num" id="stat-rooms">0</div><div class="stat-label">进行中</div></div>
+<div class="stat-item"><div class="stat-num" id="stat-games">0</div><div class="stat-label">总对局</div></div>
+<div class="stat-item"><div class="stat-num" id="stat-users">1</div><div class="stat-label">用户</div></div>
+</div>
+<div class="banner">
+<div>
+<h2>&#128640; 快速组队 MVP</h2>
+<p>支持英雄联盟、无畏契约、DOTA2、王者荣耀 &middot; 创建房间 → 分享链接 → 加入开玩</p>
+</div>
+<button class="btn btn-primary" onclick="navigateTo('create')">创建房间</button>
+</div>
+<div class="section-title">&#128293; 实时房间列表</div>
+<div class="filter-bar">
+<div><label>游戏</label>
+<select id="filterGame" onchange="filterRooms()">
+<option value="">全部游戏</option><option value="lol">英雄联盟</option><option value="vc">无畏契约</option><option value="dota2">DOTA2</option><option value="hok">王者荣耀</option>
+</select></div>
+<div><label>段位</label>
+<select id="filterRank" onchange="filterRooms()">
+<option value="">全部段位</option><option value="bronze">青铜/白银</option><option value="silver">黄金/铂金</option><option value="gold">钻石/大师</option><option value="plat">宗师/王者</option>
+</select></div>
+<div><label>位置</label>
+<select id="filterPos" onchange="filterRooms()">
+<option value="">全部位置</option><option value="mid">中单</option><option value="adc">ADC/射击位</option><option value="jg">打野/自由位</option><option value="sup">辅助/指挥</option><option value="top">上路/决斗位</option><option value="any">不限</option>
+</select></div>
+<div><label>语音</label>
+<select id="filterVoice" onchange="filterRooms()">
+<option value="">不限</option><option value="need">需要语音</option><option value="no-voice">静默</option>
+</select></div>
+</div>
+<div class="grid-rooms" id="roomList"></div>
+</div></div>
+
+<!-- ============ CREATE ============ -->
+<div class="page" id="page-create">
+<div class="container-narrow">
+<div class="section-title">创建新房间</div>
+<div class="card">
+<form id="createForm" onsubmit="handleCreateRoom(event)">
+<div class="form-group">
+<label>房间标题 *</label>
+<input type="text" id="createTitle" placeholder="例：今晚 LOL 双排，缺辅助，钻石局" maxlength="60" required>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>游戏 *</label>
+<select id="createGame" required>
+<option value="">选择游戏</option>
+<option value="lol">英雄联盟 (LOL)</option><option value="vc">无畏契约 (Valorant)</option><option value="dota2">DOTA2</option><option value="hok">王者荣耀</option>
+</select>
+</div>
+<div class="form-group">
+<label>房间类型 *</label>
+<select id="createType" required>
+<option value="free">免费试玩</option><option value="paid">付费房间</option>
+</select>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>你的段位 *</label>
+<select id="createRank" required>
+<option value="">选择段位</option>
+<option value="bronze">青铜/白银</option><option value="silver">黄金/铂金</option><option value="gold">钻石/大师</option><option value="plat">宗师/王者</option>
+</select>
+</div>
+<div class="form-group">
+<label>需要位置 *</label>
+<select id="createPos" required>
+<option value="">选择位置</option>
+<option value="mid">中单/中路</option><option value="adc">ADC/射击位</option><option value="jg">打野/自由位</option><option value="sup">辅助/指挥</option><option value="top">上路/决斗位</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label>人数 / 空位</label>
+<select id="createSeats">
+<option value="1">1人 (2排)</option><option value="2">2人 (3排)</option><option value="3">3人 (4排)</option><option value="4">4人 (5排)</option>
+</select>
+</div>
+<div class="form-group">
+<label>标签选择 (可多选)</label>
+<div class="tag-selector" id="tagSelector">
+<span class="tag-option" data-tag="需要语音">&#127919; 需要语音</span>
+<span class="tag-option" data-tag="稳扎稳打">&#128737; 稳扎稳打</span>
+<span class="tag-option" data-tag="进攻型">&#9876; 进攻型</span>
+<span class="tag-option" data-tag="娱乐局">&#127918; 娱乐局</span>
+<span class="tag-option" data-tag="冲分局">&#128200; 冲分局</span>
+<span class="tag-option" data-tag="不压力">&#128522; 氛围好</span>
+<span class="tag-option" data-tag="开麦互怼">&#128293; 开麦互怼</span>
+<span class="tag-option" data-tag="静默局">&#129302; 静默</span>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>开局时间 *</label>
+<input type="text" id="createTime" placeholder="例：现在 / 10分钟后" required>
+</div>
+<div class="form-group">
+<label>预计时长</label>
+<select id="createDuration">
+<option value="1">1局</option><option value="2">2局</option><option value="3">3局</option><option value="unlimited">不限</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label>备注说明</label>
+<textarea id="createDesc" placeholder="补充说明：段位要求、游戏风格、注意事项等"></textarea>
+</div>
+<button type="submit" class="btn btn-primary btn-lg btn-full">创建房间并发布</button>
+</form>
+</div>
+</div></div>
+
+<!-- ============ ROOM DETAIL ============ -->
+<div class="page" id="page-detail">
+<div class="container-narrow">
+<div style="margin-bottom:12px">
+<button class="btn btn-outline btn-sm" onclick="navigateTo('home')">&#8592; 返回房间列表</button>
+</div>
+<div class="detail-hero" id="detailHero"></div>
+<div class="detail-section"><h3>房间信息</h3><div id="detailInfo"></div></div>
+<div class="detail-section"><h3>房主信息</h3><div id="detailHost"></div></div>
+<div class="detail-section"><h3>房间标签</h3><div id="detailTags" class="tag-selector"></div></div>
+<div id="joinBanner" class="banner" style="margin-top:16px;display:none">
+<div>
+<h2>准备好开局了吗？</h2>
+<p>加入房间，和队友一起冲吧！</p>
+</div>
+<button class="btn btn-accent btn-lg" onclick="handleJoinRoom()">立即加入</button>
+</div>
+<div id="leftBanner" style="margin-top:16px;display:none;text-align:center">
+<p style="font-size:14px;color:var(--success);margin-bottom:8px">✅ 你已加入该房间</p>
+<button class="btn btn-primary btn-full btn-lg" onclick="navigateTo('chat')">进入聊天</button>
+</div>
+</div></div>
+
+<!-- ============ CHAT ============ -->
+<div class="page" id="page-chat">
+<div class="container-narrow">
+<div style="margin-bottom:12px">
+<button class="btn btn-outline btn-sm" onclick="navigateTo('detail')">&#8592; 返回房间</button>
+</div>
+<div class="card">
+<div class="chat-container">
+<div class="chat-header" id="chatHeader"></div>
+<div class="chat-messages" id="chatMessages"></div>
+<div class="chat-input-bar">
+<input type="text" id="chatInput" placeholder="输入消息..." onkeydown="if(event.key==='Enter')sendChat()">
+<button class="btn btn-primary btn-sm" onclick="sendChat()">发送</button>
+<button class="btn btn-outline btn-sm" onclick="showToast('语音功能即将上线')" title="语音">&#127913;</button>
+</div>
+</div>
+</div>
+<div style="margin-top:16px;display:flex;gap:8px">
+<button class="btn btn-accent btn-full btn-lg" onclick="handleFinishGame()" style="flex:1">&#9989; 对局完成</button>
+<button class="btn btn-danger btn-lg" id="leaveRoomBtn" onclick="handleLeaveRoom()">&#10005; 离开</button>
+</div>
+</div></div>
+
+<!-- ============ RATING ============ -->
+<div class="page" id="page-rating">
+<div class="container-narrow">
+<div style="margin-bottom:12px">
+<button class="btn btn-outline btn-sm" onclick="navigateTo('chat')">&#8592; 返回聊天</button>
+</div>
+<div class="card">
+<h2 style="font-size:18px;margin-bottom:4px">给队友打个分吧！</h2>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">评分帮助其他玩家判断靠谱程度</p>
+<div style="text-align:center;margin:16px 0">
+<div style="font-size:48px;margin-bottom:8px">&#127918;</div>
+<div style="font-weight:700;font-size:16px" id="ratingTarget">对手：玩家「房主」</div>
+</div>
+<div class="rating-stars" id="ratingStars">
+<span class="star" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseleave="unsetHover()">&#9733;</span>
+<span class="star" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseleave="unsetHover()">&#9733;</span>
+<span class="star" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseleave="unsetHover()">&#9733;</span>
+<span class="star" onclick="setRating(4)" onmouseover="hoverRating(4)" onmouseleave="unsetHover()">&#9733;</span>
+<span class="star" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseleave="unsetHover()">&#9733;</span>
+</div>
+<div id="ratingText" style="text-align:center;font-size:13px;color:var(--text-muted);min-height:20px"></div>
+<div class="form-group" style="margin-top:20px">
+<label>评价标签 (可多选)</label>
+<div class="tag-selector">
+<span class="tag-option" onclick="toggleTag(this)">技术好</span>
+<span class="tag-option" onclick="toggleTag(this)">态度好</span>
+<span class="tag-option" onclick="toggleTag(this)">守时</span>
+<span class="tag-option" onclick="toggleTag(this)">开麦交流</span>
+<span class="tag-option" onclick="toggleTag(this)">压力怪</span>
+<span class="tag-option" onclick="toggleTag(this)">挂机</span>
+<span class="tag-option" onclick="toggleTag(this)">爽约</span>
+</div>
+</div>
+<div class="form-group">
+<label>补充评价</label>
+<textarea id="ratingComment" placeholder="写几句评价...（选填）"></textarea>
+</div>
+<div class="modal-actions">
+<button class="btn btn-primary btn-lg btn-full" onclick="submitRating()">提交评分</button>
+</div>
+<div style="text-align:center;margin-top:16px">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:8px">想再和这位队友玩一局吗？</p>
+<button class="btn btn-accent btn-sm" onclick="handleFavoriteTeam()">&#9733; 再玩一局</button>
+</div>
+</div>
+</div></div>
+
+<!-- ============ PROFILE ============ -->
+<div class="page" id="page-profile">
+<div class="container-narrow">
+<div class="section-title">我的主页</div>
+<div class="profile-header">
+<div class="profile-avatar" id="profileAvatar">?</div>
+<div>
+<h2 style="font-size:22px" id="profileName">玩家</h2>
+<p style="color:var(--text-muted);font-size:14px" id="profileJoined">刚刚加入</p>
+</div>
+</div>
+<div class="detail-section">
+<h3>&#128202; 我的数据</h3>
+<div class="profile-stats">
+<div class="profile-stat"><div class="val" style="color:var(--success)" id="myGames">0</div><div class="lbl">完成对局</div></div>
+<div class="profile-stat"><div class="val" style="color:var(--warning)" id="myRooms">0</div><div class="lbl">创建房间</div></div>
+<div class="profile-stat"><div class="val" style="color:var(--primary-light)" id="myJoined">0</div><div class="lbl">加入房间</div></div>
+<div class="profile-stat"><div class="val" style="color:var(--accent)" id="myRating">-</div><div class="lbl">我的评分</div></div>
+</div>
+</div>
+<div class="detail-section">
+<h3>&#127997; 我创建的房间</h3>
+<div id="myRoomsList"><div class="empty-state"><div class="empty-icon">&#128214;</div><p>还没有创建过房间</p></div></div>
+</div>
+<div class="detail-section">
+<h3>&#128276; 收藏的队友</h3>
+<div id="myFavorites"><div class="empty-state"><div class="empty-icon">&#11088;</div><p>还没有收藏过队友</p></div></div>
+</div>
+</div></div>
+
+<!-- ============ ADMIN ============ -->
+<div class="page" id="page-admin">
+<div class="container">
+<div class="section-title">管理后台</div>
+<div class="admin-tabs">
+<button class="admin-tab active" onclick="switchAdminTab(this,'admin-rooms')">房间列表</button>
+<button class="admin-tab" onclick="switchAdminTab(this,'admin-users')">用户管理</button>
+<button class="admin-tab" onclick="switchAdminTab(this,'admin-data')">数据管理</button>
+</div>
+<div id="admin-rooms">
+<div class="detail-section">
+<h3>所有房间</h3>
+<div id="adminRoomList"></div>
+</div>
+</div>
+<div id="admin-users" style="display:none">
+<div class="detail-section">
+<h3>注册用户</h3>
+<div id="adminUserList"></div>
+</div>
+</div>
+<div id="admin-data" style="display:none">
+<div class="detail-section">
+<h3>数据管理</h3>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">以下操作会影响本地存储的所有数据，请谨慎操作。</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-primary" onclick="exportData()">导出所有数据</button>
+<button class="btn btn-outline" onclick="importDataClick()">导入数据</button>
+<button class="btn btn-danger" onclick="clearAllData()">清除所有数据</button>
+</div>
+<textarea id="importDataArea" style="width:100%;height:120px;margin-top:16px;display:none;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-xs);color:var(--text);padding:10px;font-size:12px;font-family:monospace" placeholder="粘贴 JSON 数据..."></textarea>
+</div>
+</div>
+</div></div>
+
+<!-- ============ MODAL: INVITE ============ -->
+<div class="modal-overlay" id="modalInvite">
+<div class="modal">
+<h2>&#128203; 邀请队友</h2>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">把你的房间链接分享给队友，对方打开链接即可加入：</p>
+<div class="copy-box">
+<input type="text" id="inviteLinkInput" readonly>
+<button class="btn btn-primary btn-sm" onclick="copyLink()">复制</button>
+</div>
+<div class="modal-actions">
+<button class="btn btn-outline" onclick="closeModal('modalInvite')">关闭</button>
+<button class="btn btn-primary" onclick="closeModal('modalInvite');showToast('邀请链接已复制！')">复制链接并分享</button>
+</div>
+</div>
+</div>
+
+<!-- ============ MODAL: JOIN CONFIRM ============ -->
+<div class="modal-overlay" id="modalJoin">
+<div class="modal">
+<h2>确认加入房间</h2>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">加入后将进入房间聊天，请保持礼貌沟通。</p>
+<div id="joinModalInfo" style="padding:12px;background:var(--bg-input);border-radius:var(--radius-xs);font-size:13px;margin-bottom:16px"></div>
+<div class="modal-actions">
+<button class="btn btn-outline" onclick="closeModal('modalJoin')">取消</button>
+<button class="btn btn-accent" onclick="confirmJoin()">确认加入</button>
+</div>
+</div>
+</div>
+
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="bottom-nav">
+<button class="nav-item active" onclick="navBottom(this,'home')"><span class="nav-icon">&#127968;</span>房间</button>
+<button class="nav-item" onclick="navBottom(this,'create')"><span class="nav-icon">&#43;</span>创建</button>
+<button class="nav-item" onclick="navBottom(this,'chat')"><span class="nav-icon">&#128172;</span>聊天</button>
+<button class="nav-item" onclick="navBottom(this,'profile')"><span class="nav-icon">&#128100;</span>我的</button>
+</nav>
+
+<script>
+// ===== CONSTANTS =====
+const STORAGE_ROOMS = 'dazi_rooms';
+const STORAGE_USERS = 'dazi_users';
+const STORAGE_MESSAGES = 'dazi_messages';
+const STORAGE_RATINGS = 'dazi_ratings';
+const STORAGE_FAVORITES = 'dazi_favorites';
+
+const gameNames = {lol:'英雄联盟',vc:'无畏契约',dota2:'DOTA2',hok:'王者荣耀'};
+const rankNames = {bronze:'青铜/白银',silver:'黄金/铂金',gold:'钻石/大师',plat:'宗师/王者'};
+const posNames = {mid:'中单',adc:'ADC',jg:'打野',sup:'辅助',top:'上单'};
+const gameClassMap = {lol:'lol',vc:'wf',dota2:'dota',hok:'hok'};
+
+// ===== STATE =====
+let currentUser = null;
+let currentRoomId = null;
+let currentRating = 0;
+let lastRefresh = 0;
+
+// ===== HELPERS =====
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 6); }
+function timeStr(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff/60000) + '分钟前';
+  if (diff < 86400000) return Math.floor(diff/3600000) + '小时前';
+  return Math.floor(diff/86400000) + '天前';
+}
+
+// ===== STORAGE =====
+function getRooms() { try { return JSON.parse(localStorage.getItem(STORAGE_ROOMS)) || []; } catch { return []; } }
+function saveRooms(rooms) { localStorage.setItem(STORAGE_ROOMS, JSON.stringify(rooms)); }
+function getUsers() { try { return JSON.parse(localStorage.getItem(STORAGE_USERS)) || {}; } catch { return {}; } }
+function saveUsers(users) { localStorage.setItem(STORAGE_USERS, JSON.stringify(users)); }
+function getMessages() { try { return JSON.parse(localStorage.getItem(STORAGE_MESSAGES)) || {}; } catch { return {}; } }
+function saveMessages(msgs) { localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(msgs)); }
+function getRatings() { try { return JSON.parse(localStorage.getItem(STORAGE_RATINGS)) || []; } catch { return []; } }
+function saveRatings(ratings) { localStorage.setItem(STORAGE_RATINGS, JSON.stringify(ratings)); }
+function getFavorites() { try { return JSON.parse(localStorage.getItem(STORAGE_FAVORITES)) || []; } catch { return []; } }
+function saveFavorites(favs) { localStorage.setItem(STORAGE_FAVORITES, JSON.stringify(favs)); }
+
+// ===== USER =====
+function initUser() {
+  let uid = localStorage.getItem('dazi_uid');
+  let users = getUsers();
+  if (!uid || !users[uid]) {
+    uid = genId();
+    const names = ['玩家_' + genId().substr(0,4)];
+    users[uid] = { id: uid, name: names[0], created: Date.now(), games: 0, roomsCreated: 0, roomsJoined: 0, ratingsReceived: [] };
+    saveUsers(users);
+    localStorage.setItem('dazi_uid', uid);
+  }
+  currentUser = users[uid];
+  return currentUser;
+}
+
+// ===== NAVIGATION =====
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + page);
+  if (target) target.classList.add('active');
+  window.scrollTo(0, 0);
+  updateBottomNav(page);
+  // Refresh data on navigation
+  if (page === 'home') renderRooms(getRooms());
+  if (page === 'profile') renderProfile();
+  if (page === 'admin') renderAdmin();
+}
+
+function navBottom(el, page) {
+  document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  navigateTo(page);
+}
+
+function updateBottomNav(page) {
+  const map = {home:0,create:1,chat:2,profile:3};
+  const idx = map[page];
+  if (idx !== undefined) {
+    document.querySelectorAll('.bottom-nav .nav-item').forEach((n,i) => n.classList.toggle('active', i === idx));
+  }
+}
+
+// ===== ROOM RENDERING =====
+function renderRooms(rooms) {
+  const container = document.getElementById('roomList');
+  updateStats(rooms);
+  if (rooms.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">&#128269;</div><p>还没有房间，来做第一个创建者吧！</p><button class="btn btn-primary" style="margin-top:16px" onclick="navigateTo(\'create\')">创建第一个房间</button></div>';
+    return;
+  }
+  container.innerHTML = rooms.map(r => {
+    const gc = gameClassMap[r.game] || r.game;
+    const stText = r.type === 'paid' ? '付费' : '免费';
+    const hasJoined = r.members && r.members.includes(currentUser.id);
+    return `<div class="card room-card" onclick="viewRoom('${r.id}')">
+      <div class="room-header">
+        <span class="room-game ${gc}">${gameNames[r.game] || r.game}</span>
+        <span class="room-status ${r.seats > 0 ? 'free' : 'full'}">${r.seats > 0 ? '&#128994; 空位' : '&#128308; 已满'} &middot; ${stText}</span>
+      </div>
+      <div class="room-title">${escHtml(r.title)}</div>
+      <div class="room-tags">
+        <span class="room-tag">${rankNames[r.rank]}</span>
+        <span class="room-tag">${posNames[r.pos]}</span>
+        <span class="room-tag">${r.voice === 'need' ? '&#127919;语音' : '&#129302;静默'}</span>
+        ${(r.style||[]).map(s => `<span class="room-tag">${escHtml(s)}</span>`).join('')}
+      </div>
+      <div class="room-footer">
+        <div class="room-host">
+          <div class="avatar">${r.host.name[0]}</div>
+          <div class="host-info">
+            <div class="host-name">${escHtml(r.host.name)} ${r.host.games ? (r.host.games > 10 ? '<span class="badge badge-verified" style="font-size:10px">✓ 老手</span>' : '') : ''}</div>
+            <div class="host-trust">${r.host.games || 0}局 &middot; ★${r.host.rating || '-'} &middot; 已创建 ${timeAgo(r.created)}</div>
+          </div>
+        </div>
+        <div class="room-time">${r.time}</div>
+      </div>
+      ${hasJoined ? '<div style="margin-top:8px"><button class="btn btn-accent btn-sm btn-full" onclick="event.stopPropagation();openChat(\'' + r.id + '\')">进入聊天</button></div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function updateStats(rooms) {
+  document.getElementById('stat-rooms').textContent = rooms.length;
+  const users = getUsers();
+  document.getElementById('stat-users').textContent = Object.keys(users).length;
+  let totalGames = 0;
+  Object.values(users).forEach(u => { totalGames += (u.games || 0); });
+  document.getElementById('stat-games').textContent = totalGames;
+}
+
+function filterRooms() {
+  const game = document.getElementById('filterGame').value;
+  const rank = document.getElementById('filterRank').value;
+  const pos = document.getElementById('filterPos').value;
+  const voice = document.getElementById('filterVoice').value;
+  const allRooms = getRooms();
+  renderRooms(allRooms.filter(r => {
+    if (game && r.game !== game) return false;
+    if (rank && r.rank !== rank) return false;
+    if (pos && r.pos !== pos) return false;
+    if (voice === 'need' && r.voice !== 'need') return false;
+    if (voice === 'no-voice' && r.voice !== 'no-voice') return false;
+    return true;
+  }));
+}
+
+// ===== VIEW ROOM =====
+function viewRoom(roomId) {
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === roomId);
+  if (!r) { showToast('房间不存在'); return; }
+  currentRoomId = roomId;
+
+  document.getElementById('detailHero').innerHTML = `
+    <div class="detail-avatar">${r.host.name[0]}</div>
+    <div class="detail-info">
+      <h2>${escHtml(r.title)}</h2>
+      <p class="detail-title">${gameNames[r.game]} &middot; ${rankNames[r.rank]} &middot; 需${posNames[r.pos]}</p>
+      <div class="detail-meta">
+        <span class="room-status ${r.type === 'paid' ? 'paid' : 'free'}">${r.type === 'paid' ? '&#128176; 付费' : '&#127993; 免费'} ${r.price || ''}</span>
+        <span style="font-size:12px;color:var(--text-muted)">&#9201; ${escHtml(r.time)}</span>
+        <span style="font-size:12px;color:var(--text-muted)">&#128101; 剩${r.seats}个空位</span>
+        <span style="font-size:12px;color:var(--accent)"><span class="live-dot"></span>进行中</span>
+      </div>
+    </div>`;
+
+  document.getElementById('detailInfo').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="padding:12px;background:var(--bg-input);border-radius:var(--radius-xs)">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">游戏</div><div style="font-weight:600">${gameNames[r.game]}</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-input);border-radius:var(--radius-xs)">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">段位</div><div style="font-weight:600">${rankNames[r.rank]}</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-input);border-radius:var(--radius-xs)">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">需要位置</div><div style="font-weight:600">${posNames[r.pos]}</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-input);border-radius:var(--radius-xs)">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">语音</div><div style="font-weight:600">${r.voice === 'need' ? '&#127919; 需要语音' : '&#129302; 静默局'}</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-input);border-radius:var(--radius-xs);grid-column:1/-1">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">说明</div><div style="font-weight:600">${escHtml(r.desc || '暂无说明')}</div>
+      </div>
+    </div>`;
+
+  const users = getUsers();
+  const hostData = users[r.host.id] || {};
+  document.getElementById('detailHost').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="avatar" style="width:40px;height:40px;font-size:16px">${r.host.name[0]}</div>
+      <div>
+        <div style="font-weight:600;font-size:14px">${escHtml(r.host.name)} ${r.host.id === currentUser.id ? '<span class="badge badge-premium" style="font-size:10px">👑 你是房主</span>' : ''}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${hostData.games || r.host.games || 0}局完成 &middot; ★${hostData.rating || r.host.rating || '-'} &middot; 爽约${hostData.absences || 0}次</div>
+      </div>
+    </div>`;
+
+  document.getElementById('detailTags').innerHTML = (r.style || []).map(s => `<span class="tag-option selected">${escHtml(s)}</span>`).join('');
+
+  const hasJoined = r.members && r.members.includes(currentUser.id);
+  if (hasJoined) {
+    document.getElementById('joinBanner').style.display = 'none';
+    document.getElementById('leftBanner').style.display = 'block';
+  } else {
+    document.getElementById('joinBanner').style.display = 'flex';
+    document.getElementById('leftBanner').style.display = 'none';
+  }
+
+  navigateTo('detail');
+}
+
+function openChat(roomId) {
+  currentRoomId = roomId;
+  navigateTo('chat');
+  renderChat();
+}
+
+// ===== JOIN ROOM =====
+function handleJoinRoom() {
+  if (!currentRoomId) return;
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === currentRoomId);
+  if (!r) return;
+
+  document.getElementById('joinModalInfo').innerHTML = `<div style="font-weight:600;margin-bottom:4px">${escHtml(r.title)}</div><div style="color:var(--text-muted);font-size:12px">房主：${escHtml(r.host.name)} &middot; ${gameNames[r.game]} &middot; ${rankNames[r.rank]}</div>`;
+  openModal('modalJoin');
+}
+
+function confirmJoin() {
+  closeModal('modalJoin');
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === currentRoomId);
+  if (!r) return;
+
+  if (!r.members) r.members = [];
+  if (!r.members.includes(currentUser.id)) {
+    r.members.push(currentUser.id);
+    r.seats = Math.max(0, r.seats - 1);
+  }
+
+  // Update user stats
+  const users = getUsers();
+  if (users[currentUser.id]) {
+    users[currentUser.id].roomsJoined = (users[currentUser.id].roomsJoined || 0) + 1;
+    saveUsers(users);
+    currentUser = users[currentUser.id];
+  }
+
+  saveRooms(rooms);
+  showToast('✅ 已加入房间！');
+  navigateTo('chat');
+  setTimeout(() => {
+    addSystemChat(r.host.name + ' 欢迎 ' + currentUser.name + ' 加入房间！');
+  }, 300);
+}
+
+// ===== CHAT =====
+function addSystemChat(text) {
+  const msgs = getMessages();
+  if (!msgs[currentRoomId]) msgs[currentRoomId] = [];
+  msgs[currentRoomId].push({
+    id: genId(), type: 'system', text: text,
+    ts: Date.now(), from: 'system'
+  });
+  saveMessages(msgs);
+}
+
+function renderChat() {
+  if (!currentRoomId) return;
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === currentRoomId);
+  if (!r) { showToast('房间不存在'); navigateTo('home'); return; }
+
+  // Update header
+  const isHost = r.host.id === currentUser.id;
+  document.getElementById('chatHeader').innerHTML = `
+    <div class="avatar">${r.host.name[0]}</div>
+    <div class="chat-info">
+      <h3>${escHtml(r.host.name)} 的房间${isHost ? ' (你是房主)' : ''}</h3>
+      <p>${gameNames[r.game]} &middot; ${rankNames[r.rank]} &middot; ${escHtml(r.title.substring(0,25))}...</p>
+    </div>`;
+
+  // Show/hide leave button
+  document.getElementById('leaveRoomBtn').style.display = isHost ? 'none' : '';
+
+  // Set rating target
+  const hostName = isHost ? '队友' : r.host.name;
+  document.getElementById('ratingTarget').textContent = `给「${hostName}」评分`;
+
+  // Load messages
+  const msgs = getMessages();
+  const roomMsgs = (msgs[currentRoomId] || []);
+  const container = document.getElementById('chatMessages');
+
+  if (roomMsgs.length === 0) {
+    // Add initial system message
+    msgs[currentRoomId] = [{
+      id: genId(), type: 'system',
+      text: `房间已创建，等待队友加入...`, ts: r.created, from: 'system'
+    }];
+    saveMessages(msgs);
+    roomMsgs.push(msgs[currentRoomId][0]);
+  }
+
+  container.innerHTML = roomMsgs.map(m => {
+    if (m.type === 'system') return `<div class="chat-msg system">${escHtml(m.text)}</div>`;
+    const isMine = m.from === currentUser.id;
+    const senderName = m.from === r.host.id ? r.host.name : (m.from === currentUser.id ? currentUser.name : '玩家' + m.from.substr(0,4));
+    return `<div class="chat-msg ${isMine ? 'guest-msg' : 'host-msg'}">${escHtml(m.text)}<div class="msg-meta">${escHtml(senderName)} &middot; ${timeStr(m.ts)}</div></div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+
+  // Auto-refresh every 2 seconds
+  window._chatRefresh = setInterval(renderChat, 2000);
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !currentRoomId) return;
+
+  const msgs = getMessages();
+  if (!msgs[currentRoomId]) msgs[currentRoomId] = [];
+  msgs[currentRoomId].push({
+    id: genId(),
+    type: 'message',
+    from: currentUser.id,
+    text: text,
+    ts: Date.now()
+  });
+  saveMessages(msgs);
+
+  input.value = '';
+  renderChat();
+}
+
+function handleFinishGame() {
+  if (!currentRoomId) return;
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === currentRoomId);
+  if (!r) return;
+
+  // Update user games count
+  const users = getUsers();
+  if (users[currentUser.id]) {
+    users[currentUser.id].games = (users[currentUser.id].games || 0) + 1;
+    saveUsers(users);
+    currentUser = users[currentUser.id];
+  }
+
+  // Add system message about game completion
+  const msgs = getMessages();
+  if (!msgs[currentRoomId]) msgs[currentRoomId] = [];
+  const hostName = r.host.id === currentUser.id ? '队友' : r.host.name;
+  msgs[currentRoomId].push({
+    id: genId(), type: 'system',
+    text: '🎮 对局完成！请给对方打个分吧~', ts: Date.now(), from: 'system'
+  });
+  saveMessages(msgs);
+
+  document.getElementById('ratingTarget').textContent = `给「${hostName}」评分`;
+  navigateTo('rating');
+  if (window._chatRefresh) clearInterval(window._chatRefresh);
+}
+
+function handleLeaveRoom() {
+  if (!currentRoomId) return;
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === currentRoomId);
+  if (!r) return;
+
+  if (r.members) {
+    r.members = r.members.filter(id => id !== currentUser.id);
+    r.seats = Math.min(r.seats + 1, 4);
+  }
+
+  const users = getUsers();
+  if (users[currentUser.id]) {
+    users[currentUser.id].roomsJoined = Math.max(0, (users[currentUser.id].roomsJoined || 1) - 1);
+    saveUsers(users);
+    currentUser = users[currentUser.id];
+  }
+
+  saveRooms(rooms);
+  showToast('已离开房间');
+  if (window._chatRefresh) clearInterval(window._chatRefresh);
+  navigateTo('home');
+}
+
+// ===== CREATE ROOM =====
+document.addEventListener('DOMContentLoaded', () => {
+  initUser();
+  initTags();
+  navigateTo('home');
+  // Listen for storage events from other tabs
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_ROOMS) renderRooms(getRooms());
+    if (e.key === STORAGE_MESSAGES && currentRoomId) renderChat();
+  });
+  // Auto-refresh room list every 5 seconds
+  setInterval(() => {
+    const currentPage = document.querySelector('.page.active');
+    if (currentPage && currentPage.id === 'page-home') {
+      filterRooms();
+    }
+  }, 5000);
+});
+
+function initTags() {
+  document.querySelectorAll('#tagSelector .tag-option').forEach(el => {
+    el.addEventListener('click', () => { el.classList.toggle('selected'); });
+  });
+}
+
+function toggleTag(el) { el.classList.toggle('selected'); }
+
+function handleCreateRoom(e) {
+  e.preventDefault();
+  const selectedTags = [];
+  document.querySelectorAll('#tagSelector .tag-option.selected').forEach(t => selectedTags.push(t.dataset.tag));
+
+  const newRoom = {
+    id: genId(),
+    title: document.getElementById('createTitle').value.trim(),
+    game: document.getElementById('createGame').value,
+    rank: document.getElementById('createRank').value,
+    pos: document.getElementById('createPos').value,
+    type: document.getElementById('createType').value,
+    voice: selectedTags.includes('需要语音') ? 'need' : 'no-voice',
+    style: selectedTags,
+    time: document.getElementById('createTime').value.trim(),
+    seats: parseInt(document.getElementById('createSeats').value),
+    desc: document.getElementById('createDesc').value.trim(),
+    created: Date.now(),
+    host: {
+      id: currentUser.id,
+      name: currentUser.name,
+      games: currentUser.games || 0,
+      rating: currentUser.rating || 4.5,
+      absences: 0
+    },
+    members: [currentUser.id],
+    chatUrl: generateShareUrl()
+  };
+
+  const rooms = getRooms();
+  rooms.unshift(newRoom);
+  saveRooms(rooms);
+
+  // Update user
+  const users = getUsers();
+  users[currentUser.id].roomsCreated = (users[currentUser.id].roomsCreated || 0) + 1;
+  saveUsers(users);
+  currentUser = users[currentUser.id];
+
+  // Show invite
+  document.getElementById('inviteLinkInput').value = generateShareUrl();
+  showToast('🎉 房间创建成功！');
+  currentRoomId = newRoom.id;
+  navigateTo('detail');
+  viewRoom(newRoom.id);
+  setTimeout(() => openModal('modalInvite'), 500);
+
+  // Reset form
+  document.getElementById('createForm').reset();
+  document.querySelectorAll('#tagSelector .tag-option').forEach(t => t.classList.remove('selected'));
+}
+
+function generateShareUrl() {
+  // For local use, include roomId in URL hash
+  return window.location.origin + window.location.pathname + '#room:' + genId();
+}
+
+// ===== URL HASH ROUTING =====
+function handleHash() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#room:')) {
+    const roomId = hash.substring(6);
+    // Check if room exists (look in current session's rooms)
+    const rooms = getRooms();
+    const r = rooms.find(r => r.id === roomId);
+    if (r) {
+      currentRoomId = roomId;
+      viewRoom(roomId);
+      return;
+    }
+  }
+  // Default to home
+  navigateTo('home');
+}
+
+window.addEventListener('hashchange', handleHash);
+// On load, check hash
+setTimeout(handleHash, 100);
+
+// ===== RATING =====
+function setRating(val) {
+  currentRating = val;
+  updateStars();
+  const labels = ['','很差','不太好','一般','不错','完美！'];
+  document.getElementById('ratingText').textContent = labels[val];
+}
+function hoverRating(val) { document.querySelectorAll('#ratingStars .star').forEach((s,i) => s.style.color = i < val ? 'var(--warning)' : 'var(--text-dim)'); }
+function unsetHover() { if (currentRating === 0) { document.querySelectorAll('#ratingStars .star').forEach(s => s.style.color = ''); } else hoverRating(currentRating); }
+function updateStars() { document.querySelectorAll('#ratingStars .star').forEach((s,i) => s.classList.toggle('active', i < currentRating)); }
+
+function submitRating() {
+  if (currentRating === 0) { showToast('请先给一个评分'); return; }
+  const comment = document.getElementById('ratingComment').value.trim();
+  const selectedTags = [];
+  document.querySelectorAll('#page-rating .tag-selector .tag-option.selected').forEach(t => selectedTags.push(t.textContent));
+
+  const rating = {
+    id: genId(),
+    roomId: currentRoomId,
+    from: currentUser.id,
+    fromName: currentUser.name,
+    toName: document.getElementById('ratingTarget').textContent.replace('给「','').replace('」评分',''),
+    score: currentRating,
+    tags: selectedTags,
+    comment: comment,
+    ts: Date.now()
+  };
+
+  const ratings = getRatings();
+  ratings.push(rating);
+  saveRatings(ratings);
+
+  // Update host stats
+  if (currentRoomId) {
+    const rooms = getRooms();
+    const r = rooms.find(r => r.id === currentRoomId);
+    if (r) {
+      const users = getUsers();
+      if (users[r.host.id]) {
+        const hostRatings = users[r.host.id].ratingsReceived || [];
+        hostRatings.push(currentRating);
+        users[r.host.id].rating = hostRatings.reduce((a,b) => a+b, 0) / hostRatings.length;
+        users[r.host.id].games = (users[r.host.id].games || 0) + 1;
+        saveUsers(users);
+      }
+      saveRooms(rooms);
+    }
+  }
+
+  showToast('✅ 评分提交成功！感谢反馈');
+  currentRating = 0;
+  setTimeout(() => navigateTo('home'), 1000);
+}
+
+function handleFavoriteTeam() {
+  if (!currentRoomId) return;
+  const rooms = getRooms();
+  const r = rooms.find(r => r.id === currentRoomId);
+  if (!r) return;
+
+  const favs = getFavorites();
+  if (!favs.find(f => f.roomId === currentRoomId)) {
+    favs.push({
+      id: genId(),
+      roomId: currentRoomId,
+      hostId: r.host.id,
+      hostName: r.host.name,
+      ts: Date.now()
+    });
+    saveFavorites(favs);
+  }
+  showToast('⭐ 已收藏队友，下次优先邀请！');
+}
+
+// ===== PROFILE =====
+function renderProfile() {
+  document.getElementById('profileAvatar').textContent = currentUser.name[0];
+  document.getElementById('profileName').textContent = currentUser.name;
+  document.getElementById('profileJoined').textContent = '加入于 ' + timeStr(currentUser.created);
+  document.getElementById('myGames').textContent = currentUser.games || 0;
+  document.getElementById('myRooms').textContent = currentUser.roomsCreated || 0;
+  document.getElementById('myJoined').textContent = currentUser.roomsJoined || 0;
+
+  const ratings = getRatings();
+  const myRatings = ratings.filter(r => r.from === currentUser.id);
+  const avgRating = myRatings.length > 0
+    ? (myRatings.reduce((a,b) => a + b.score, 0) / myRatings.length).toFixed(1)
+    : '-';
+  document.getElementById('myRating').textContent = avgRating;
+
+  // My rooms
+  const rooms = getRooms().filter(r => r.host.id === currentUser.id);
+  if (rooms.length > 0) {
+    document.getElementById('myRoomsList').innerHTML = rooms.map(r => {
+      const members = r.members ? r.members.length : 0;
+      return `<div style="padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="viewRoom('${r.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <h1 data-i18n="brandTitle">一起成事</h1>
-            <p data-i18n="brandSubtitle">实时匹配同事，一起做伟大的事情</p>
+            <div style="font-weight:600">${escHtml(r.title)}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${gameNames[r.game]} &middot; ${rankNames[r.rank]} &middot; ${members}人已加入 &middot; ${timeAgo(r.created)}</div>
+          </div>
+          <span class="room-status ${r.seats > 0 ? 'free' : 'full'}">${r.seats > 0 ? '进行中' : '已满'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('myRoomsList').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128214;</div><p>还没有创建过房间</p></div>';
+  }
+
+  // Favorites
+  const favs = getFavorites();
+  if (favs.length > 0) {
+    document.getElementById('myFavorites').innerHTML = favs.map(f => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div class="avatar">${f.hostName[0]}</div>
+        <div style="flex:1"><div style="font-weight:600;font-size:14px">${escHtml(f.hostName)}</div><div style="font-size:12px;color:var(--text-muted)">${timeAgo(f.ts)}收藏</div></div>
+        <button class="btn btn-accent btn-sm" onclick="showToast('邀请功能即将上线')">邀请</button>
+      </div>`).join('');
+  } else {
+    document.getElementById('myFavorites').innerHTML = '<div class="empty-state"><div class="empty-icon">&#11088;</div><p>还没有收藏过队友</p></div>';
+  }
+}
+
+// ===== ADMIN =====
+function switchAdminTab(btn, tabId) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  ['admin-rooms','admin-users','admin-data'].forEach(id => {
+    document.getElementById(id).style.display = id === tabId ? 'block' : 'none';
+  });
+}
+
+function renderAdmin() {
+  const rooms = getRooms();
+  const users = getUsers();
+
+  // Room list
+  if (rooms.length === 0) {
+    document.getElementById('adminRoomList').innerHTML = '<div class="empty-state"><p>还没有房间</p></div>';
+  } else {
+    document.getElementById('adminRoomList').innerHTML = rooms.map(r => {
+      const members = r.members ? r.members.length : 0;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-weight:600;font-size:14px">${escHtml(r.title)}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${gameNames[r.game]} &middot; ${rankNames[r.rank]} &middot; ${r.host.name} &middot; ${members}人已加入 &middot; ${timeAgo(r.created)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="room-status ${r.seats > 0 ? 'free' : 'full'}">${r.seats > 0 ? '进行中' : '已满'}</span>
+          <button class="btn btn-outline btn-sm" onclick="viewRoom('${r.id}');navigateTo('detail')">查看</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRoom('${r.id}')">删除</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Users
+  const userList = Object.values(users);
+  if (userList.length === 0) {
+    document.getElementById('adminUserList').innerHTML = '<div class="empty-state"><p>还没有用户</p></div>';
+  } else {
+    document.getElementById('adminUserList').innerHTML = userList.map(u => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:36px;height:36px;font-size:14px">${u.name[0]}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px">${escHtml(u.name)}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${u.games || 0}局 &middot; 创建${u.roomsCreated || 0}房 &middot; 加入${u.roomsJoined || 0}房 &middot; ${timeAgo(u.created)}</div>
           </div>
         </div>
+        <button class="btn btn-outline btn-sm" onclick="deleteUser('${u.id}')">删除</button>
+      </div>`).join('');
+  }
+}
 
-        <a class="contact-link" href="mailto:matafyan@qq.com" data-i18n="contact">想一起做伟大的事，联系 matafyan@qq.com</a>
+function deleteRoom(roomId) {
+  if (!confirm('确定删除这个房间吗？')) return;
+  const rooms = getRooms().filter(r => r.id !== roomId);
+  saveRooms(rooms);
+  // Remove messages
+  const msgs = getMessages();
+  delete msgs[roomId];
+  saveMessages(msgs);
+  showToast('房间已删除');
+  renderAdmin();
+}
 
-        <div class="topbar-actions">
-          <div class="language-toggle" aria-label="Language switcher">
-            <button class="lang-button active" type="button" data-lang="zh">中</button>
-            <button class="lang-button" type="button" data-lang="en">EN</button>
-          </div>
+function deleteUser(userId) {
+  if (!confirm('确定删除这个用户吗？')) return;
+  const users = getUsers();
+  delete users[userId];
+  saveUsers(users);
+  showToast('用户已删除');
+  renderAdmin();
+}
 
-          <div class="metrics" aria-label="实时状态">
-            <div>
-              <strong id="onlineCount">0</strong>
-              <span data-i18n="online">在线</span>
-            </div>
-            <div>
-              <strong id="matchCount">0</strong>
-              <span data-i18n="collaborators">可协作</span>
-            </div>
-          </div>
-        </div>
-      </header>
+// ===== DATA MANAGEMENT =====
+function exportData() {
+  const data = {
+    rooms: getRooms(),
+    users: getUsers(),
+    messages: getMessages(),
+    ratings: getRatings(),
+    favorites: getFavorites(),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dazi-data-' + Date.now() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据导出成功');
+}
 
-      <main class="page">
-        <!-- Step indicator -->
-        <div id="stepIndicator" class="step-indicator" aria-label="步骤导航">
-          <div class="step active" data-step="0">
-            <span class="step-num">1</span>
-            <span class="step-label" data-i18n="stepDefine">定义目标</span>
-          </div>
-          <div class="step-connector"></div>
-          <div class="step" data-step="1">
-            <span class="step-num">2</span>
-            <span class="step-label" data-i18n="stepMatch">寻找伙伴</span>
-          </div>
-          <div class="step-connector"></div>
-          <div class="step" data-step="2">
-            <span class="step-num">3</span>
-            <span class="step-label" data-i18n="stepCollaborate">一起成事</span>
-          </div>
-        </div>
+function importDataClick() {
+  const area = document.getElementById('importDataArea');
+  area.style.display = area.style.display === 'none' ? 'block' : 'none';
+}
 
-        <!-- Step 1: Intent Form -->
-        <section class="intent-panel" aria-label="发布协作意图" id="stepPanel0">
-          <div class="section-head">
-            <div>
-              <span data-i18n="currentIntent">当前想做</span>
-              <h2 data-i18n="publishThing">发布一件要做成的事</h2>
-            </div>
-            <button id="rerollName" class="ghost-button" type="button" data-i18n="randomName">随机昵称</button>
-          </div>
+function importData() {
+  const area = document.getElementById('importDataArea');
+  try {
+    const data = JSON.parse(area.value);
+    if (data.rooms) saveRooms(data.rooms);
+    if (data.users) saveUsers(data.users);
+    if (data.messages) saveMessages(data.messages);
+    if (data.ratings) saveRatings(data.ratings);
+    if (data.favorites) saveFavorites(data.favorites);
+    showToast('数据导入成功');
+    area.value = '';
+    area.style.display = 'none';
+    renderAdmin();
+  } catch(e) {
+    showToast('导入失败：' + e.message);
+  }
+}
 
-          <form id="intentForm" class="intent-form">
-            <label>
-              <span data-i18n="alias">昵称</span>
-              <input id="aliasInput" type="text" maxlength="12" autocomplete="off" placeholder="" />
-            </label>
+function clearAllData() {
+  if (!confirm('确定清除所有数据吗？这将删除所有房间、用户和消息！')) return;
+  if (!confirm('再次确认：确定要清除所有数据吗？')) return;
+  localStorage.removeItem(STORAGE_ROOMS);
+  localStorage.removeItem(STORAGE_USERS);
+  localStorage.removeItem(STORAGE_MESSAGES);
+  localStorage.removeItem(STORAGE_RATINGS);
+  localStorage.removeItem(STORAGE_FAVORITES);
+  showToast('所有数据已清除');
+  navigateTo('home');
+}
 
-            <label>
-              <span data-i18n="direction">方向</span>
-              <select id="categorySelect"></select>
-            </label>
+// ===== MODAL =====
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-            <label>
-              <span data-i18n="thing">这件事</span>
-              <select id="merchantSelect"></select>
-            </label>
+// ===== COPY =====
+function copyLink() {
+  const input = document.getElementById('inviteLinkInput');
+  // Update the link with actual current room
+  if (currentRoomId) {
+    input.value = window.location.origin + window.location.pathname + '#room:' + currentRoomId;
+  }
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => {
+    showToast('链接已复制到剪贴板');
+  }).catch(() => {
+    document.execCommand('copy');
+    showToast('链接已复制');
+  });
+}
 
-            <label>
-              <span data-i18n="time">投入时间</span>
-              <select id="budgetSelect"></select>
-            </label>
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
 
-            <label>
-              <span data-i18n="team">团队/地点</span>
-              <select id="locationSelect"></select>
-            </label>
-
-            <label>
-              <span data-i18n="visibility">可见范围</span>
-              <select id="visibilitySelect"></select>
-            </label>
-
-            <label>
-              <span data-i18n="needed">还差同事</span>
-              <input id="neededInput" min="1" max="4" step="1" type="number" />
-            </label>
-
-            <fieldset>
-              <legend data-i18n="neededSkills">需要能力</legend>
-              <div id="preferenceOptions" class="chip-row"></div>
-            </fieldset>
-
-            <fieldset>
-              <legend data-i18n="signals">行动信号</legend>
-              <div id="tagOptions" class="chip-row"></div>
-            </fieldset>
-
-            <div class="switch-row">
-              <span data-i18n="startToday">今天能开始</span>
-              <label class="switch" aria-label="今天是否可以开始">
-                <input id="pickupToggle" type="checkbox" />
-                <span></span>
-              </label>
-            </div>
-
-            <label>
-              <span data-i18n="expectedResponse">期望响应</span>
-              <div class="range-row">
-                <input id="waitInput" min="10" max="90" step="5" type="range" />
-                <output id="waitOutput">20s</output>
-              </div>
-            </label>
-
-            <button class="primary-button" type="submit" data-i18n="startMatching">开始匹配同事</button>
-
-            <button id="quickStartBtn" class="ghost-button" type="button" data-i18n="quickStart" style="grid-column:span 4">快速开始（随机）</button>
-          </form>
-        </section>
-
-        <!-- Step 2: Matching (shown after publishing) -->
-        <section class="match-panel" aria-label="实时匹配同事列表" id="stepPanel1" style="display:none">
-          <div class="section-head">
-            <div>
-              <span data-i18n="realtimeMatch">实时匹配</span>
-              <h2 data-i18n="matchHeading">能一起推进的同事</h2>
-            </div>
-            <strong id="publishState" class="state-pill" data-i18n="published">实时匹配中</strong>
-          </div>
-
-          <!-- Loading state -->
-          <div id="loadingState" class="loading-state" style="display:none">
-            <div class="spinner"></div>
-            <p data-i18n="findingPartner">正在为你寻找合适的同事...</p>
-            <p class="loading-sub" data-i18n="loadingSub">通常只需几秒</p>
-          </div>
-
-          <div id="matchList" class="match-list"></div>
-        </section>
-
-        <!-- Step 3: Connected state -->
-        <section class="connected-panel" id="stepPanel2" style="display:none" aria-label="已连接">
-          <div class="connected-hero">
-            <div class="connected-icon">🤝</div>
-            <h2 data-i18n="connectedTitle">已连接！</h2>
-            <p id="connectedWith" class="connected-text"></p>
-            <p class="connected-sub" data-i18n="connectedSub">现在可以一起把事做成了</p>
-          </div>
-
-          <div class="connected-actions">
-            <button id="startTimerBtn" class="primary-button" type="button" data-i18n="startFocusTimer">开始 25 分钟专注</button>
-            <button id="shareBtn" class="ghost-button" type="button" data-i18n="share">分享成就</button>
-            <button id="newMatchBtn" class="ghost-button" type="button" data-i18n="findAnother">找另一个伙伴</button>
-          </div>
-
-          <!-- Focus timer -->
-          <div id="focusTimer" class="focus-timer" style="display:none">
-            <div class="timer-display">
-              <span id="timerMinutes">25</span>:<span id="timerSeconds">00</span>
-            </div>
-            <p class="timer-label" data-i18n="focusLabel">专注中，一起加油</p>
-            <button id="pauseTimerBtn" class="ghost-button" type="button" data-i18n="pause">暂停</button>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="app.js"></script>
-  </body>
+// ===== DISPLAY CURRENT USER =====
+(function() {
+  const el = document.getElementById('currentUserDisplay');
+  if (currentUser) el.textContent = '👤 ' + currentUser.name;
+})();
+</script>
+</body>
 </html>
